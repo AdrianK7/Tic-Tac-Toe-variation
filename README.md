@@ -1,5 +1,5 @@
 # Tic-Tac_Toe
-Old learning project used for learning AWT and Swing. I get carried away from my goal and this what happened. <br /> 
+Old project used for learning AWT and Swing. I get carried away from my goal and this what happened. <br /> 
 Recently edited to readable form for anyone other than Me.<br />
 
 TODO<br />
