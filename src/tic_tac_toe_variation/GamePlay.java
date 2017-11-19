@@ -1,82 +1,97 @@
 package tic_tac_toe_variation;
 
 import java.awt.Point;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.SortedSet;
 
 
-public class GamePlay
+public class GamePlay implements Serializable
 {
-	private boolean nextPlayerToMove;
-	private Set<Point2D> listCross;
-	private Set<Point2D> listEllipse;
-	private Point winPointOne;
-	private Point winPointTwo;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8240330393165542364L;
+	private final Player playerEllipse;
+	private final Player playerCross;
+	private Set<Point2D> movesPlayerCross;
+	private Set<Point2D> movesPlayerEllipse;
+	private Point pointToDrawWinLineOne;
+	private Point pointToDrawWinLineTwo;
 	private int pointsToWin;
-	private final int sizeSingleSquere;
-	public static final int DEFAULT_SIZE_SINGLE_SQUERE = 1; 
-	public static final int DEFAULT_POINTS_TO_WIN = 3;
-	public static final boolean DEFAULT_START_FIGURE = true;
+	private int counterToWin;
+	private int fieldsCountVertical;
+	private int fieldsCountHorizontal;
+	public static final int GAME_FIELDS_VERTICAL = 20;
+	public static final int GAME_FIELDS_HORIZONTAL = 20;
+	public static final int POINTS_TO_WIN = 5;
+	private static final int OFFSET_TO_PROPER_DRAW_WIN_LINE = 1;
 
-	public GamePlay()
-	{
-		this(DEFAULT_SIZE_SINGLE_SQUERE, DEFAULT_POINTS_TO_WIN, DEFAULT_START_FIGURE);
+	public GamePlay(Player playerEllipse, Player playerCross) {
+		fieldsCountHorizontal = GAME_FIELDS_HORIZONTAL;
+		fieldsCountVertical = GAME_FIELDS_VERTICAL;	
+		movesPlayerCross = new HashSet<>();
+		movesPlayerEllipse = new HashSet<>();
+		pointToDrawWinLineOne = null;
+		pointToDrawWinLineTwo = null;
+		pointsToWin = POINTS_TO_WIN;
+		this.playerEllipse = playerEllipse;
+		this.playerCross = playerCross;
+		counterToWin = 0;
 	}
 	
-	public GamePlay(int pointsToWin)
-	{
-		this(DEFAULT_SIZE_SINGLE_SQUERE, pointsToWin, DEFAULT_START_FIGURE);
-	}
-	
-	public GamePlay(boolean startFigure)
-	{
-		this(DEFAULT_SIZE_SINGLE_SQUERE, DEFAULT_POINTS_TO_WIN, startFigure);
-	}
-	
-	public GamePlay(int pointsToWin, boolean startFigure)
-	{
-		this(DEFAULT_SIZE_SINGLE_SQUERE, pointsToWin, startFigure);
-	}
-	
-	public GamePlay(int sizeSingleSquere, int pointsToWin)
-	{
-		this(sizeSingleSquere, pointsToWin, DEFAULT_START_FIGURE);
-	}
-	
-	public GamePlay(int sizeSingleSquere, int pointsToWin, boolean startingPlayer)
-	{
-		listCross = new HashSet<>();
-		listEllipse = new HashSet<>();
-		winPointOne = null;
-		winPointTwo = null;
+	public void setPointsToWin(int pointsToWin) throws ValueToLowExpection {
+		if(pointsToWin < 3) {
+			throw new ValueToLowExpection("Cause: pointsToWin < 3");
+		}
 		this.pointsToWin = pointsToWin;
-		this.sizeSingleSquere = sizeSingleSquere;
-		this.nextPlayerToMove = startingPlayer;
 	}
 	
-	public int getSizeSingleSquere()
-	{
-		return sizeSingleSquere;
+	public int getPointsToWin() {
+		return pointsToWin;
 	}
 	
-	public boolean getNextPlayerToMove() {
-		return nextPlayerToMove;
+	public int getFieldsCountVertical() {
+		return fieldsCountVertical;
+	}
+
+	public void setFieldsCountVertical(int fieldsCountVertical) throws ValueToLowExpection {
+		if(pointsToWin < 3) {
+			throw new ValueToLowExpection("Cause: fieldsCountVertical < 3");
+		}
+		this.fieldsCountVertical = fieldsCountVertical;
+	}
+
+	public int getFieldsCountHorizontal() {
+		return fieldsCountHorizontal;
+	}
+
+	public void setFieldsCountHorizontal(int fieldsCountHorizontal) throws ValueToLowExpection {
+		if(pointsToWin < 3) {
+			throw new ValueToLowExpection("Cause: fieldsCountHorizontal < 3");
+		}
+		this.fieldsCountHorizontal = fieldsCountHorizontal;
+	}
+	
+	public Player getPlayerEllipse() {
+		return playerEllipse;
+	}
+
+	public Player getPlayerCross() {
+		return playerCross;
 	}
 	
 	public Set<Point2D> getListCross(boolean editable) 
 	{
 		if(editable)
 		{
-			return listCross;
+			return movesPlayerCross;
 		}
 		else
 		{
-			Set<Point2D> tempList = new HashSet<>(listCross.size());
-			for(Point2D point : listCross) 
+			Set<Point2D> tempList = new HashSet<>(movesPlayerCross.size());
+			for(Point2D point : movesPlayerCross) 
 			{
 				tempList.add((Point2D) point.clone());
 			}
@@ -90,12 +105,12 @@ public class GamePlay
 	{
 		if(editable)
 		{
-			return listEllipse;
+			return movesPlayerEllipse;
 		}
 		else
 		{
-			Set<Point2D> tempList = new HashSet<>(listEllipse.size());
-			for(Point2D point : listEllipse) 
+			Set<Point2D> tempList = new HashSet<>(movesPlayerEllipse.size());
+			for(Point2D point : movesPlayerEllipse) 
 			{
 				tempList.add((Point2D) point.clone());
 			}
@@ -106,47 +121,51 @@ public class GamePlay
 	
 	public Point2D getWinPointOne() 
 	{
-		if(winPointOne == null)
+		if(pointToDrawWinLineOne == null)
 			return null;
 		
-		return (Point) winPointOne.clone();
+		return (Point) pointToDrawWinLineOne.clone();
 
 	}
 	
 	public Point2D getWinPointTwo() 
 	{
-		if(winPointTwo == null)
+		if(pointToDrawWinLineTwo == null)
 			return null;
 		
-		return (Point) winPointTwo.clone();
+		return (Point) pointToDrawWinLineTwo.clone();
 	}
 	
-	public void move(Point2D clickedPoint, boolean whoseMove) 
+	public Point2D move(Point2D clickedPoint) 
 	{
 		if(!isPointOutsideGameField(clickedPoint) && !isPointAlreadyPlayed(clickedPoint)) 
 		{
-			if(whoseMove)
+			if(playerEllipse.isPlayerMove())
 			{
-				listEllipse.add(clickedPoint);
+				movesPlayerEllipse.add(clickedPoint);
+				playerEllipse.setPlayerMove(false);
+				playerCross.setPlayerMove(true);
 			}
 			else
 			{
-				listCross.add(clickedPoint);
+				movesPlayerCross.add(clickedPoint);
+				playerEllipse.setPlayerMove(true);
+				playerCross.setPlayerMove(false);
 			}	
-			this.nextPlayerToMove = !whoseMove;
 		}
+		return clickedPoint;
 	}
 	
 	private boolean isPointAlreadyPlayed(Point2D clickedPoint) {
 		boolean pointPlayed = false;
-		for(Point2D p : listEllipse) 
+		for(Point2D p : movesPlayerEllipse) 
 		{
 			if(p.getX() == clickedPoint.getX() && p.getY() == clickedPoint.getY())
 			{
 				pointPlayed = true;
 			}
 		}
-		for(Point2D p : listCross) 
+		for(Point2D p : movesPlayerCross) 
 		{
 			if(p.getX() == clickedPoint.getX() && p.getY() == clickedPoint.getY())
 			{
@@ -160,167 +179,195 @@ public class GamePlay
 		
 		return clickedPoint.getX() < 0 || clickedPoint.getY() < 0;
 	}
-	
-	public Point findClickedField(MouseEvent e, SortedSet<? extends Point2D> coordOfSquares)
+
+	/*
+	 * return false when lastMove is null
+	 */
+	public boolean checkVictory(Point2D lastMove)
 	{
-		return this.findClickedField(new Point(e.getX(), e.getY()), coordOfSquares);
+		return this.checkVictory(pointsToWin, lastMove);
 	}
 	
-	public Point findClickedField(Point2D clickedSquare, SortedSet<? extends Point2D> coordOfSquares)
+	public boolean checkVictory(int pointsToWin, Point2D lastMove) 
 	{
-		Point coordsOfClickedSquere = null;
-		if(coordOfSquares == null || coordOfSquares.isEmpty() || sizeSingleSquere <= 0)
-			return coordsOfClickedSquere;
-		coordsOfClickedSquere = getRealSquareCoordsInsideGameField(clickedSquare, coordOfSquares);
-
-		return changeCoordsFromRealToGrid(coordsOfClickedSquere, coordOfSquares);
-	}
-	
-	private Point getRealSquareCoordsInsideGameField(Point2D clickedSquare, SortedSet<? extends Point2D> coordOfSquares) {
-		int coordXClick = -1;
-		int coordYClick = -1;
-
-		for (Point2D pointRectCoord : coordOfSquares) 
-		{
-			for(int i = 0; i < sizeSingleSquere; i++) 
-			{
-				if(pointRectCoord.getX() == clickedSquare.getX() - i && coordXClick == -1)
-				{
-					coordXClick = (int) clickedSquare.getX() - i;
-				}
-				if(pointRectCoord.getY() == clickedSquare.getY() - i && coordYClick == -1)
-				{
-					coordYClick = (int) clickedSquare.getY() - i;
-				}
-			}
-			if(coordXClick != -1 && coordYClick != -1)
-			{
-				break;
-			}
+		if(lastMove == null) {
+			return false;
 		}
-		return new Point(coordXClick, coordYClick);
-	}
-	
-	private Point changeCoordsFromRealToGrid(Point clickedSquare, SortedSet<? extends Point2D> coordOfSquares) {
-		int coordXClick = (int) clickedSquare.getX();
-		int coordYClick = (int) clickedSquare.getY();
 		
-		Iterator<? extends Point2D> iter = coordOfSquares.iterator();
-		Point2D firstInSet = new PointComparable();
-		if(iter.hasNext())
-			firstInSet = iter.next();
-		int coordXFirstSquere = (int) firstInSet.getX();
-		int coordYFirstSquere = (int) firstInSet.getY();
-		if(coordXFirstSquere != coordXClick)
-		{
-			coordXClick = (coordXClick - coordXFirstSquere) / sizeSingleSquere;
-		}
-		else
-		{
-			coordXClick = 0;
-		}
-		if(coordYFirstSquere != coordYClick)
-		{
-			coordYClick = (coordYClick - coordYFirstSquere) / sizeSingleSquere;	
-		}
-		else
-		{
-			coordYClick = 0;
-		}
-		return new Point(coordXClick, coordYClick);
-	}
-
-	public boolean checkVictory()
-	{
-		return this.checkVictory(this.nextPlayerToMove, pointsToWin);
+		Set<Point2D> movesOfPreviousPlayer = getMovesOfPreviousPlayer();
+		return checkVictoryVertical(movesOfPreviousPlayer, pointsToWin, lastMove) ||
+				checkVictoryHorizontal(movesOfPreviousPlayer, pointsToWin, lastMove) ||
+				checkVictoryBendLeft(movesOfPreviousPlayer, pointsToWin, lastMove) ||
+				checkVictoryBendRight(movesOfPreviousPlayer, pointsToWin, lastMove);
 	}
 	
-	public boolean checkVictory(int pointsToWin)
-	{
-		return this.checkVictory(this.nextPlayerToMove, pointsToWin);
-	}
 	
-	public boolean checkVictory(boolean nextPlayerToMove, int pointsToWin) 
-	{
-		Set<Point2D> list = getMovesOfCurrentPlayer(nextPlayerToMove);
-
-		int counterVertical = 0;
-		int counterHorizontal = 0;
-		int counterLeft = 0;
-		int counterRight = 0;
-
-		for(Point2D p : list) 
+	private Set<Point2D> getMovesOfPreviousPlayer() {
+		if(!playerEllipse.isPlayerMove())
 		{
-			counterHorizontal = 0;
-			counterVertical = 0;
-			counterLeft = 0;
-			counterRight = 0;
-			for(Point2D p2 : list) 
+			if(movesPlayerEllipse.size() >= pointsToWin)
 			{
-				if(p.getY() == p2.getY() && p2.getX() - p.getX() >= 0 && p2.getX() - p.getX() <= pointsToWin - 1) 
-				{
-					counterHorizontal++;
-					if(counterHorizontal >= pointsToWin) 
-					{
-						winPointOne = new Point((int)p.getX(), (int)p.getY());
-						winPointTwo = new Point((int)p.getX() + pointsToWin, (int)p.getY() + 1);
-						return true;
-					}
-				}
-				if(p.getX() == p2.getX() && p2.getY() - p.getY() >= 0 && p2.getY() - p.getY() <= pointsToWin - 1) 
-				{
-					counterVertical++;
-					if(counterVertical >= pointsToWin) 
-					{
-						winPointOne = new Point((int) p.getX(), (int)p.getY());
-						winPointTwo = new Point((int) p.getX() + 1, (int)p.getY() + pointsToWin);
-						return true;
-					}
-				}
-				if(p2.getX()-p.getX() >= 0 && p2.getX()-p.getX() <= pointsToWin - 1 &&
-						p2.getY() - p.getY() >= 0 && p2.getY() - p.getY() <= pointsToWin - 1 &&
-						p2.getY() - p.getY() == p2.getX() - p.getX()) 
-				{
-					counterLeft++;
-					if(counterLeft >= pointsToWin) 
-					{
-						winPointOne = new Point((int)p.getX(), (int)p.getY());
-						winPointTwo = new Point((int)p.getX() + pointsToWin, (int)p.getY() + pointsToWin);
-						return true;
-					}
-				}
-				if(p2.getX()-p.getX() >= 0 && p2.getX()-p.getX() <= pointsToWin - 1 &&
-						p2.getY() - p.getY() <= 0 && p2.getY() - p.getY() >= - pointsToWin + 1 &&
-						-(p2.getY() - p.getY()) == p2.getX() - p.getX()) 
-				{
-					counterRight++;
-					if(counterRight >= pointsToWin) 
-					{
-						winPointOne = new Point((int)p.getX() + pointsToWin, (int)p.getY() - pointsToWin + 1);
-						winPointTwo = new Point((int)p.getX(), (int)p.getY() + 1);
-						return true;
-					}
-				}
-			}
-		}	
-		return false;
-	}
-	
-	private Set<Point2D> getMovesOfCurrentPlayer(boolean nextPlayerToMove) {
-		if(!nextPlayerToMove)
-		{
-			if(listEllipse.size() >= pointsToWin)
-			{
-				return listEllipse;
+				return movesPlayerEllipse;
 			}
 		}
 		else
 		{
-			if(listCross.size() >= pointsToWin)
+			if(movesPlayerCross.size() >= pointsToWin)
 			{
-				return listCross;
+				return movesPlayerCross;
 			}
 		}
 		return new HashSet<>();
+	}
+	
+	private boolean checkVictoryVertical(Set<Point2D> movesOfCurrentPlayer, int pointsToWin, Point2D lastMove) {
+		if(counterToWin == pointsToWin - 1) {
+			return false;
+		}
+		counterToWin = 0;
+		int coordReferenceForWinLine = (int) lastMove.getY() + OFFSET_TO_PROPER_DRAW_WIN_LINE;
+		boolean verticalBottomReached = true;
+		boolean verticalTopReached = true;
+		Point2D prospector = new Point(0,0);
+
+		for(int i = 1; i < pointsToWin && 
+				counterToWin < pointsToWin - 1 && 
+				(verticalTopReached || verticalBottomReached); i++) {
+			prospector.setLocation(lastMove.getX(), lastMove.getY() + i);
+			if(movesOfCurrentPlayer.contains(prospector) && verticalBottomReached) {
+				coordReferenceForWinLine = (int) lastMove.getY() + i + OFFSET_TO_PROPER_DRAW_WIN_LINE;
+				counterToWin++;
+			}
+			else {
+				verticalBottomReached = false;
+			}
+			prospector.setLocation(lastMove.getX(), lastMove.getY() - i);
+			if(movesOfCurrentPlayer.contains(prospector) && verticalTopReached) {
+				counterToWin++;
+			}
+			else {
+				verticalTopReached = false;
+			}
+		}
+		if(counterToWin == pointsToWin - 1) {
+			pointToDrawWinLineOne = new Point((int) lastMove.getX(), coordReferenceForWinLine - pointsToWin);
+			pointToDrawWinLineTwo = new Point((int) lastMove.getX() + OFFSET_TO_PROPER_DRAW_WIN_LINE, coordReferenceForWinLine);
+			return true;
+		}
+		return false;
+
+	}
+	
+	private boolean checkVictoryHorizontal(Set<Point2D> movesOfCurrentPlayer, int pointsToWin, Point2D lastMove) {
+		if(counterToWin == pointsToWin - 1) {
+			return false;
+		}
+		counterToWin = 0;
+		int coordReferenceForWinLine = (int) lastMove.getX() + OFFSET_TO_PROPER_DRAW_WIN_LINE;
+		boolean horizontalLeftReached = true;
+		boolean horizontalRightReached = true;
+		Point2D prospector = new Point(0,0);
+		
+		for(int i  = 1; i < pointsToWin && 
+				counterToWin < pointsToWin - 1 && 
+				(horizontalLeftReached || horizontalRightReached); i++) {
+			prospector.setLocation(lastMove.getX() + i, lastMove.getY());
+			if(movesOfCurrentPlayer.contains(prospector) && horizontalRightReached) {
+				coordReferenceForWinLine = (int) lastMove.getX() + i + OFFSET_TO_PROPER_DRAW_WIN_LINE;
+				counterToWin++;
+			}
+			else {
+				horizontalRightReached= false;
+			}
+			prospector.setLocation(lastMove.getX() - i, lastMove.getY());
+			if(movesOfCurrentPlayer.contains(prospector) && horizontalLeftReached) {
+				counterToWin++;
+			}
+			else {
+				horizontalLeftReached = false;
+			}
+		}
+		if(counterToWin == pointsToWin - 1) {
+			pointToDrawWinLineOne = new Point(coordReferenceForWinLine - pointsToWin, (int) lastMove.getY());
+			pointToDrawWinLineTwo = new Point(coordReferenceForWinLine, (int) lastMove.getY() + OFFSET_TO_PROPER_DRAW_WIN_LINE);
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean checkVictoryBendLeft(Set<Point2D> movesOfCurrentPlayer, int pointsToWin, Point2D lastMove) {
+		if(counterToWin == pointsToWin - 1) {
+			return false;
+		}
+		counterToWin = 0;
+		Point2D coordsReferenceForWinLine = new Point((int) lastMove.getX() + 1, (int) lastMove.getY());
+		boolean bendLeftTopReached = true;
+		boolean bendLeftBottomReached = true;
+		Point2D prospector = new Point(0,0);
+
+		for(int i  = 1; i < pointsToWin && 
+				counterToWin < pointsToWin - 1 && 
+				(bendLeftTopReached || bendLeftBottomReached); i++) {
+			prospector.setLocation(lastMove.getX() + i, lastMove.getY() - i);
+			if(movesOfCurrentPlayer.contains(prospector) && bendLeftTopReached) {
+				coordsReferenceForWinLine.setLocation(lastMove.getX() + i + OFFSET_TO_PROPER_DRAW_WIN_LINE, lastMove.getY() - i);
+				counterToWin++;
+			}
+			else {
+				bendLeftTopReached = false;
+			}
+			prospector.setLocation(lastMove.getX() - i, lastMove.getY() + i);
+			if(movesOfCurrentPlayer.contains(prospector) && bendLeftBottomReached) {
+				counterToWin++;
+			}
+			else {
+				bendLeftBottomReached = false;
+			}
+		}
+		if(counterToWin == pointsToWin - 1) {
+			pointToDrawWinLineOne = new Point((int) coordsReferenceForWinLine.getX() - pointsToWin, (int) coordsReferenceForWinLine.getY() + pointsToWin);
+			pointToDrawWinLineTwo = new Point((int) coordsReferenceForWinLine.getX(), (int) coordsReferenceForWinLine.getY());
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean checkVictoryBendRight(Set<Point2D> movesOfCurrentPlayer, int pointsToWin, Point2D lastMove) {
+		if(counterToWin == pointsToWin - 1) {
+			return false;
+		}
+		counterToWin = 0;
+		Point2D coordsReferenceForWinLine = new Point((int) lastMove.getX() + OFFSET_TO_PROPER_DRAW_WIN_LINE, 
+				(int) lastMove.getY() + OFFSET_TO_PROPER_DRAW_WIN_LINE);
+		boolean bendRightTopReached = true;
+		boolean bendRightBottomReached = true;
+		Point2D prospector = new Point(0,0);
+
+		for(int i  = 1; i < pointsToWin && 
+				counterToWin < pointsToWin - 1 && 
+				(bendRightTopReached || bendRightBottomReached); i++) {			
+			prospector.setLocation(lastMove.getX() + i, lastMove.getY() + i);
+			if(movesOfCurrentPlayer.contains(prospector) && bendRightBottomReached) {
+				coordsReferenceForWinLine.setLocation(lastMove.getX() + i + OFFSET_TO_PROPER_DRAW_WIN_LINE, 
+						lastMove.getY() + i + OFFSET_TO_PROPER_DRAW_WIN_LINE);
+				counterToWin++;
+			}
+			else {
+				bendRightBottomReached = false;
+			}
+			prospector.setLocation(lastMove.getX() - i, lastMove.getY() - i);
+			if(movesOfCurrentPlayer.contains(prospector) && bendRightTopReached) {
+				counterToWin++;
+			}
+			else {
+				bendRightTopReached = false;
+			}
+		}
+		if(counterToWin == pointsToWin - 1) {
+			pointToDrawWinLineOne = new Point((int) coordsReferenceForWinLine.getX() - pointsToWin, (int) coordsReferenceForWinLine.getY() - pointsToWin);
+			pointToDrawWinLineTwo = new Point((int) coordsReferenceForWinLine.getX(), (int) coordsReferenceForWinLine.getY());
+			return true;
+		}
+		return false;
 	}
 }

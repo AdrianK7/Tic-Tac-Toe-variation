@@ -3,6 +3,6 @@ Old project used for learning AWT and Swing. I get carried away from my goal and
 Recently edited to readable form for anyone other than Me.<br />
 
 TODO<br />
-- GUI<br />
+- Start menu<br />
 - multiplayer mode<br />
 - finish JavaDoc
