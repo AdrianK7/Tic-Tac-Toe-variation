@@ -4,15 +4,12 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.SystemColor;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -41,26 +38,33 @@ public class GameFrame extends JFrame
 		iInit();
 		
 	}
-	
+	public void stops() {
+		
+	}
 	private void iInit() 
 	{		
 		setLocationByPlatform(true);
-		topPanel = new JPanel();
-		rightPanel = new JPanel();
-		leftPanel = new JPanel();
-		centerPanel = new GameField(new GamePlay(20, 5));
-		centerPanel.setFocusable(false);
 		GridBagLayout layout = new GridBagLayout();
 		this.setLayout(layout);
 		Dimension dimCore = new Dimension();
 		dimCore.setSize(minWidthFrame,minHeightFrame);
 		this.setMinimumSize(dimCore);
-		addButton(leftPanel, "testLeft", null);
-		addButton(rightPanel, "testRight", null);
 		getContentPane().setBackground(SystemColor.window);
-		centerPanel.addMouseListener(new MouseListener());	
 		addComponentListener(new CompListener());
+		
+		topPanel = new JPanel();
+		Player p1 = Player.ELLIPSE;
+		Player p2 = Player.CROSS;
+		GamePlay gPlay = new GamePlay(Player.ELLIPSE, Player.CROSS);
+		centerPanel = new GameField(gPlay);
+		centerPanel.setFocusable(false);
+		centerPanel.addMouseListener(new MouseListener());
 		centerPanel.setIgnoreRepaint(false);
+		rightPanel = new PlayerPanel(p1, centerPanel);
+		rightPanel.setBorder(BorderFactory.createEmptyBorder(4,4,4,4));
+		leftPanel = new PlayerPanel(p2, centerPanel);
+		leftPanel.setBorder(BorderFactory.createEmptyBorder(4,4,4,4));
+
 		this.add(leftPanel, makeConstraints(GridBagConstraints.BOTH, GridBagConstraints.CENTER, 	0, 0, 0, 0, 1, 2));
 		this.add(centerPanel, makeConstraints(GridBagConstraints.BOTH, GridBagConstraints.CENTER, 	2, 1, 1, 1, 1, 1));
 		this.add(rightPanel, makeConstraints(GridBagConstraints.BOTH, GridBagConstraints.CENTER, 	0, 0, 2, 0, 1, 2));
@@ -83,20 +87,6 @@ public class GameFrame extends JFrame
 		
 		return constraint;
 		
-	}
-	
-	private void addButton(JComponent comp, String label, GridBagConstraints constraints ) 
-	{
-		JButton button = new JButton(label);
-		
-		comp.add(new JButton(label), constraints);
-		button.addActionListener(new ActionListener() 
-		{
-			public void actionPerformed(ActionEvent e) 
-			{
-
-			}
-		});
 	}
 	
 	class MouseListener extends MouseAdapter

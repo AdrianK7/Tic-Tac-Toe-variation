@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
@@ -19,57 +20,55 @@ import java.util.TreeSet;
 
 import javax.swing.JPanel;
 
-
 /**
 * Object <code>gameFieldComponent</code> represent a game field panel
 */
-@SuppressWarnings("serial")
 public class GameField extends JPanel
 {
-	private boolean resize;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4397073919702124615L;
+	private boolean isWindowResized;
 	private int heightGame;
 	private int widthGame;
-	private int sizeSingleSquare;
 	private SortedSet<PointComparable> squaresCoord;
 	private Graphics2D comp;
 	private GamePlay gPlay;
 	private Point2D firstSqareInGrid;
+	public int sizeSingleSquare;
+	public static final int SIZE_SINGLE_SQUARE = 20;
 	
 	/**
 	* Constructor.
 	*/
 	public GameField(GamePlay gPlay) 
 	{
-		resize = false;
+		this(gPlay, SIZE_SINGLE_SQUARE);
+	}
+	
+	public GameField(GamePlay gPlay, int sizeSingleSquare) 
+	{
+		isWindowResized = false;
 		squaresCoord = new TreeSet<>();
-		heightGame = 20;
-		widthGame = 20;
 		this.addMouseListener(new MouseListener());
 		this.addComponentListener(new CompListener());
 		this.gPlay = gPlay;
-		sizeSingleSquare = gPlay.getSizeSingleSquere();
+		this.sizeSingleSquare = sizeSingleSquare;
+		this.heightGame = gPlay.getFieldsCountVertical();
+		this.widthGame = gPlay.getFieldsCountHorizontal();
 	}
 	
-	/**
-	* Constructor.
-	* @param sizeGame.
-	*/
-	public GameField(GamePlay gPlay, int sizeGame) 
-	{		
-		this(gPlay);
-		heightGame = sizeGame;
-		widthGame = sizeGame;
+	public int getSizeSingleSquare()
+	{
+		return sizeSingleSquare;
 	}
 	
-	public GameField(GamePlay gPlay, int heightGame, int widthGame) 
-	{		
-		this(gPlay);
-		this.heightGame = heightGame;
-		this.widthGame = widthGame;
+	public void setSizeSingleSquare(int sizeSingleSquare)
+	{
+		this.sizeSingleSquare = sizeSingleSquare;
 	}
-
 	
-
 	/**
 	* Method paint game field and squares/ellipses make by players.
 	*/
@@ -81,9 +80,9 @@ public class GameField extends JPanel
 		super.setBackground(Color.BLACK);
 		comp.setColor(Color.ORANGE);
 		
-		if(resize || squaresCoord.isEmpty()) {
+		if(isWindowResized || squaresCoord.isEmpty()) {
 			squaresCoord = new TreeSet<>();
-			resize = false;
+			isWindowResized = false;
 			paintNewGameFieldSquares(getSize());
 		}
 		else {
@@ -152,7 +151,7 @@ public class GameField extends JPanel
 		{
 			for(Point2D p : playerMoves) 
 			{
-				comp.setColor(Color.GREEN);
+				comp.setColor(gPlay.getPlayerEllipse().getColor());
 				comp.draw(new Ellipse2D.Double((firstSqareInGrid.getX() + p.getX() * sizeSingleSquare) + 2,
 						(firstSqareInGrid.getY() + p.getY() * sizeSingleSquare) + 2,
 						sizeSingleSquare - 4,
@@ -166,7 +165,7 @@ public class GameField extends JPanel
 		{
 			for(Point2D p : playerMoves) 
 			{
-				comp.setColor(Color.MAGENTA);
+				comp.setColor(gPlay.getPlayerCross().getColor());
 				comp.draw(new Line2D.Double(firstSqareInGrid.getX() + p.getX() * sizeSingleSquare + 4,
 						firstSqareInGrid.getY() + p.getY() * sizeSingleSquare + 4,
 						firstSqareInGrid.getX() + p.getX() * sizeSingleSquare + sizeSingleSquare - 4,
@@ -177,6 +176,80 @@ public class GameField extends JPanel
 						firstSqareInGrid.getY() + p.getY() * sizeSingleSquare + sizeSingleSquare - 4));
 			}
 		}
+	}
+	
+	
+	
+	/*
+	 * If top left corner field is clicked coordinates returned are (0,0) 
+	 */
+	private Point findClickedField(MouseEvent e, SortedSet<? extends Point2D> coordOfSquares)
+	{
+		return this.findClickedField(new Point(e.getX(), e.getY()), coordOfSquares);
+	}
+	
+	private Point findClickedField(Point2D clickedSquare, SortedSet<? extends Point2D> coordOfSquares)
+	{
+		Point coordsOfClickedSquere = null;
+		if(coordOfSquares == null || coordOfSquares.isEmpty() || sizeSingleSquare <= 0 || clickedSquare == null)
+			return coordsOfClickedSquere;
+		coordsOfClickedSquere = getRealSquareCoordsInsideGameField(clickedSquare, coordOfSquares);
+
+		return changeCoordsFromRealToGrid(coordsOfClickedSquere, coordOfSquares);
+	}
+	
+	private Point getRealSquareCoordsInsideGameField(Point2D clickedSquare, SortedSet<? extends Point2D> coordOfSquares) {
+		int coordXClick = -1;
+		int coordYClick = -1;
+
+		for (Point2D pointRectCoord : coordOfSquares) 
+		{
+			for(int i = 0; i < sizeSingleSquare; i++) 
+			{
+				if(pointRectCoord.getX() == clickedSquare.getX() - i && coordXClick == -1)
+				{
+					coordXClick = (int) clickedSquare.getX() - i;
+				}
+				if(pointRectCoord.getY() == clickedSquare.getY() - i && coordYClick == -1)
+				{
+					coordYClick = (int) clickedSquare.getY() - i;
+				}
+			}
+			if(coordXClick != -1 && coordYClick != -1)
+			{
+				break;
+			}
+		}
+		return new Point(coordXClick, coordYClick);
+	}
+	
+	private Point changeCoordsFromRealToGrid(Point clickedSquare, SortedSet<? extends Point2D> coordOfSquares) {
+		int coordXClick = (int) clickedSquare.getX();
+		int coordYClick = (int) clickedSquare.getY();
+		
+		Iterator<? extends Point2D> iter = coordOfSquares.iterator();
+		Point2D firstInSet = new PointComparable();
+		if(iter.hasNext())
+			firstInSet = iter.next();
+		int coordXFirstSquere = (int) firstInSet.getX();
+		int coordYFirstSquere = (int) firstInSet.getY();
+		if(coordXFirstSquere != coordXClick)
+		{
+			coordXClick = (coordXClick - coordXFirstSquere) / sizeSingleSquare;
+		}
+		else
+		{
+			coordXClick = 0;
+		}
+		if(coordYFirstSquere != coordYClick)
+		{
+			coordYClick = (coordYClick - coordYFirstSquere) / sizeSingleSquare;	
+		}
+		else
+		{
+			coordYClick = 0;
+		}
+		return new Point(coordXClick, coordYClick);
 	}
 	
 	/**
@@ -190,8 +263,7 @@ public class GameField extends JPanel
 		{
 			if(!victory)
 			{
-				gPlay.move(gPlay.findClickedField(e, squaresCoord), gPlay.getNextPlayerToMove());
-				victory = gPlay.checkVictory();
+				victory = gPlay.checkVictory(gPlay.move(findClickedField(e, squaresCoord)));
 			}
 
 		}	
@@ -202,85 +274,8 @@ public class GameField extends JPanel
 		
 	    public void componentResized(ComponentEvent e)
 		{
-	    	resize = true;
+	    	isWindowResized = true;
 			repaint();
 		}
-	}
-}
-
-class PointComparable extends Point2D implements Comparable<PointComparable>
-{
-	double x;
-	double y;
-	
-	public PointComparable()
-	{
-		super();
-	}
-	
-	public PointComparable(double x, double y)
-	{
-		this.x = x;
-		this.y = y;
-	}
-	
-	@Override
-	public double getX() 
-	{
-		return x;
-	}
-
-	@Override
-	public double getY() 
-	{
-		return y;
-	}
-	
-	@Override
-	public void setLocation(double x, double y) 
-	{
-		this.x = x;
-		this.y = y;
-	}
-	@Override
-	public int compareTo(PointComparable o) 
-	{
-		int compared = 0;
-		if(this.getX() == o.getX() && this.getY() == o.getY())
-			compared = 0;
-		if(this.getX() < o.getX() || this.getX() == o.getX() && this.getY() < o.getY())
-			compared = -1;
-		if(this.getX() > o.getX() || this.getX() == o.getX() && this.getY() > o.getY())
-			compared = 1;
-	
-		return compared;
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		long temp;
-		temp = java.lang.Double.doubleToLongBits(x);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = java.lang.Double.doubleToLongBits(y);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		PointComparable other = (PointComparable) obj;
-		if (java.lang.Double.doubleToLongBits(x) != java.lang.Double.doubleToLongBits(other.x))
-			return false;
-		if (java.lang.Double.doubleToLongBits(y) != java.lang.Double.doubleToLongBits(other.y))
-			return false;
-		return true;
 	}
 }
